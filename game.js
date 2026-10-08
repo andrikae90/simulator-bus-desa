@@ -46,80 +46,111 @@ for(let z=-230;z<240;z+=25){
  else {house(29,z,0);field(-34,z,35,20)}
 }
 
-// bus - detailed lightweight model
+// bus - bus-simulator style 3D model
 const bus=new THREE.Group();
-bus.position.set(0,1.97,35);
+bus.position.set(0,2.27,35);
 
-// Main body: extruded side profile with a slightly sloped front and rounded/beveled edges
+const redMat=new THREE.MeshStandardMaterial({color:0xc92f2f,roughness:.58,metalness:.05});
+const redDark=new THREE.MeshStandardMaterial({color:0x8f2020,roughness:.62});
+const yellowMat=new THREE.MeshStandardMaterial({color:0xf2c62d,roughness:.55});
+const blackMat=new THREE.MeshStandardMaterial({color:0x151515,roughness:.82});
+const rubberMat=new THREE.MeshStandardMaterial({color:0x111111,roughness:.9});
+const chromeMat=new THREE.MeshStandardMaterial({color:0xb8c0c4,metalness:.75,roughness:.25});
+const glassMat=new THREE.MeshStandardMaterial({color:0x79b8c7,metalness:.15,roughness:.18,transparent:true,opacity:.82});
+
+function busBox(w,h,d,mat,pos,bevel=.08){
+ const g=new THREE.BoxGeometry(w,h,d);
+ const m=new THREE.Mesh(g,mat);m.position.set(...pos);m.castShadow=true;m.receiveShadow=true;bus.add(m);return m;
+}
+
+// Main rounded body
 const bodyShape=new THREE.Shape();
-bodyShape.moveTo(-2.5,-1.45);
-bodyShape.lineTo(2.5,-1.45);
-bodyShape.lineTo(2.5,1.05);
-bodyShape.lineTo(2.15,1.55);
-bodyShape.lineTo(-1.95,1.55);
-bodyShape.lineTo(-2.5,1.15);
+bodyShape.moveTo(-2.48,-1.35);
+bodyShape.lineTo(2.48,-1.35);
+bodyShape.lineTo(2.48,.95);
+bodyShape.quadraticCurveTo(2.48,1.48,1.95,1.55);
+bodyShape.lineTo(-1.85,1.55);
+bodyShape.quadraticCurveTo(-2.38,1.48,-2.48,.92);
 bodyShape.closePath();
-const bodyGeo=new THREE.ExtrudeGeometry(bodyShape,{depth:8.6,bevelEnabled:true,bevelSegments:2,bevelSize:.12,bevelThickness:.12});
+const bodyGeo=new THREE.ExtrudeGeometry(bodyShape,{depth:8.55,bevelEnabled:true,bevelSegments:3,bevelSize:.11,bevelThickness:.11});
 bodyGeo.center();
-const body=new THREE.Mesh(bodyGeo,new THREE.MeshStandardMaterial({color:0xd83a32,roughness:.62}));
-body.castShadow=true;body.receiveShadow=true;bus.add(body);
+const body=new THREE.Mesh(bodyGeo,redMat);body.castShadow=true;body.receiveShadow=true;bus.add(body);
 
-// Yellow lower skirt
-const skirt=new THREE.Mesh(new THREE.BoxGeometry(5.0,.72,8.8),new THREE.MeshStandardMaterial({color:0xf0c72e,roughness:.6}));
-skirt.position.y=-1.15;skirt.castShadow=true;bus.add(skirt);
+// Lower yellow band and black chassis
+busBox(5.02,.58,8.65,yellowMat,[0,-1.05,0],.05);
+busBox(4.72,.28,8.35,blackMat,[0,-1.43,0],.03);
 
-// Windows, front and rear glass
-const glassMat=new THREE.MeshStandardMaterial({color:0x9edcf0,metalness:.1,roughness:.2});
-const frontGlass=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.25),glassMat);
-frontGlass.position.set(-2.05,.45,-4.36);frontGlass.rotation.y=-Math.PI/2;frontGlass.rotation.z=.12;bus.add(frontGlass);
-const rearGlass=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.25),glassMat);
-rearGlass.position.set(2.05,.45,4.36);rearGlass.rotation.y=Math.PI/2;bus.add(rearGlass);
+// Front windshield: correctly placed on the front face
+const windshield=new THREE.Mesh(new THREE.PlaneGeometry(4.0,1.25),glassMat);
+windshield.position.set(0,.48,-4.34);windshield.rotation.x=0;bus.add(windshield);
+// center divider
+busBox(.10,1.30,.05,blackMat,[0,.48,-4.39],.01);
 
-// Side windows
-for(const z of [-3.05,-1.05,1.05,3.05]){
-  for(const x of [-2.53,2.53]){
-    const win=new THREE.Mesh(new THREE.PlaneGeometry(1.55,1.12),glassMat);
-    win.position.set(x,.48,z);
-    win.rotation.y=x<0?-Math.PI/2:Math.PI/2;
+// Rear glass
+const rearGlass=new THREE.Mesh(new THREE.PlaneGeometry(4.0,1.18),glassMat);
+rearGlass.position.set(0,.48,4.34);rearGlass.rotation.y=Math.PI;bus.add(rearGlass);
+
+// Side windows, with front/rear pillars
+for(const side of [-1,1]){
+  for(const z of [-3.15,-1.05,1.05,3.05]){
+    const win=new THREE.Mesh(new THREE.PlaneGeometry(1.62,1.12),glassMat);
+    win.position.set(side*2.53,.48,z);
+    win.rotation.y=side<0?Math.PI/2:-Math.PI/2;
     bus.add(win);
   }
 }
 
-// Wheels: true cylinders, axis across the vehicle width
-const tireMat=new THREE.MeshStandardMaterial({color:0x171717,roughness:.85});
-const rimMat=new THREE.MeshStandardMaterial({color:0xbfc5c9,metalness:.65,roughness:.3});
-for(const x of [-2.62,2.62]) for(const z of [-2.65,2.65]){
-  const tire=new THREE.Mesh(new THREE.CylinderGeometry(.82,.82,.42,24),tireMat);
-  tire.rotation.z=Math.PI/2;
-  tire.position.set(x,-1.15,z);
-  tire.castShadow=true;bus.add(tire);
-  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.45,20),rimMat);
-  rim.rotation.z=Math.PI/2;
-  rim.position.set(x,-1.15,z);
-  rim.castShadow=true;bus.add(rim);
-}
+// Front lower panel and grille
+busBox(4.45,.62,.16,redDark,[0,-.78,-4.42],.04);
+busBox(2.2,.20,.10,blackMat,[0,-.88,-4.53],.02);
 
-// Bumpers, headlights, tail lights
-const bumperMat=new THREE.MeshStandardMaterial({color:0x242424,roughness:.55});
-const bumperFront=new THREE.Mesh(new THREE.BoxGeometry(4.7,.35,.25),bumperMat);
-bumperFront.position.set(0,-1.35,-4.55);bus.add(bumperFront);
-const bumperRear=bumperFront.clone();bumperRear.position.z=4.55;bus.add(bumperRear);
-const lampMat=new THREE.MeshStandardMaterial({color:0xfff3c4,emissive:0x554400,emissiveIntensity:.45});
+// Headlights and tail lights
 for(const x of [-1.55,1.55]){
-  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.24,12,8),lampMat);
-  lamp.position.set(x,-.55,-4.58);bus.add(lamp);
-  const tail=new THREE.Mesh(new THREE.SphereGeometry(.2,12,8),new THREE.MeshStandardMaterial({color:0xff2020,emissive:0x440000,emissiveIntensity:.35}));
-  tail.position.set(x,-.55,4.58);bus.add(tail);
+  const head=new THREE.Mesh(new THREE.SphereGeometry(.27,16,10),new THREE.MeshStandardMaterial({color:0xfff1b0,emissive:0xffcc44,emissiveIntensity:.65}));
+  head.position.set(x,-.55,-4.57);head.scale.set(1,.75,.35);bus.add(head);
+  const tail=new THREE.Mesh(new THREE.SphereGeometry(.22,14,10),new THREE.MeshStandardMaterial({color:0xe31d1d,emissive:0x550000,emissiveIntensity:.5}));
+  tail.position.set(x,-.55,4.57);tail.scale.set(1,.8,.35);bus.add(tail);
 }
 
-// Mirrors
-const mirrorMat=new THREE.MeshStandardMaterial({color:0x202020,roughness:.5});
-for(const x of [-2.85,2.85]){
-  const arm=new THREE.Mesh(new THREE.BoxGeometry(.16,.16,.7),mirrorMat);
-  arm.position.set(x,.7,x<0?-4.0:4.0);arm.rotation.y=x<0?.18:-.18;bus.add(arm);
-  const mirror=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8),mirrorMat);
-  mirror.position.set(x,.9,x<0?-4.3:4.3);bus.add(mirror);
+// Bumpers
+busBox(4.65,.30,.28,blackMat,[0,-1.30,-4.58],.05);
+busBox(4.65,.30,.28,blackMat,[0,-1.30,4.58],.05);
+
+// Wheels with real tires + rims + hubs
+for(const x of [-2.58,2.58]) for(const z of [-2.65,2.65]){
+  const tire=new THREE.Mesh(new THREE.CylinderGeometry(.84,.84,.48,32),rubberMat);
+  tire.rotation.z=Math.PI/2;tire.position.set(x,-1.45,z);tire.castShadow=true;bus.add(tire);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.47,.47,.51,24),chromeMat);
+  rim.rotation.z=Math.PI/2;rim.position.set(x,-1.45,z);rim.castShadow=true;bus.add(rim);
+  const hub=new THREE.Mesh(new THREE.CylinderGeometry(.16,.16,.54,16),blackMat);
+  hub.rotation.z=Math.PI/2;hub.position.set(x,-1.45,z);bus.add(hub);
 }
+
+// Wheel arches, visually connecting body to tires
+for(const z of [-2.65,2.65]){
+  const arch=new THREE.Mesh(new THREE.TorusGeometry(.91,.11,8,24,Math.PI),redDark);
+  arch.rotation.set(Math.PI/2,0,0);arch.position.set(0,-.67,z);bus.add(arch);
+}
+
+// Doors with windows
+for(const z of [-3.45,3.35]){
+  busBox(1.05,1.85,.045,redDark,[2.50,.0,z],.02);
+  const doorGlass=new THREE.Mesh(new THREE.PlaneGeometry(.72,.82),glassMat);
+  doorGlass.position.set(2.53,.62,z);doorGlass.rotation.y=-Math.PI/2;bus.add(doorGlass);
+  busBox(.10,.10,.10,chromeMat,[2.60,-.15,z],.01);
+}
+
+// Mirrors and arms at the front
+for(const x of [-2.78,2.78]){
+  const arm=busBox(.12,.12,.65,blackMat,[x,.72,-4.12],.03);
+  arm.rotation.y=x<0?.18:-.18;
+  const mirror=new THREE.Mesh(new THREE.SphereGeometry(.22,12,8),blackMat);
+  mirror.position.set(x,.92,-4.35);mirror.scale.set(.75,1,.45);bus.add(mirror);
+}
+
+// Roof cap and destination/sign panel
+busBox(4.72,.18,8.25,redDark,[0,1.58,0],.04);
+busBox(2.9,.38,.12,blackMat,[0,1.18,-4.48],.02);
 
 scene.add(bus);
 
