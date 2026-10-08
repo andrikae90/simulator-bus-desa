@@ -46,14 +46,82 @@ for(let z=-230;z<240;z+=25){
  else {house(29,z,0);field(-34,z,35,20)}
 }
 
-// bus
+// bus - detailed lightweight model
 const bus=new THREE.Group();
-const body=box(5,3.2,9,0xd83a32,0,3.0,0);
-body.parent.remove(body);bus.add(body);body.position.set(0,0,0);
-const lower=box(5.3,1.1,9.2,0xf0c72e,0,-1.0,0);lower.parent.remove(lower);bus.add(lower);lower.position.y=-1;
-for(const x of [-2.55,2.55]) for(const z of [-2.8,2.8]){const w=new THREE.Mesh(new THREE.CylinderGeometry(.85,.85,.5,16),new THREE.MeshStandardMaterial({color:0x222222}));w.rotation.z=Math.PI/2;w.position.set(x, -1.8,z);bus.add(w)}
-for(const x of [-1.7,0,1.7]){const win=box(1.25,1.1,.12,0x9edcf0,x,.45,-4.56);win.parent.remove(win);bus.add(win);win.position.set(x,.45,-4.56)}
-bus.position.set(0,0,35);scene.add(bus);
+bus.position.set(0,2.1,35);
+
+// Main body: extruded side profile with a slightly sloped front and rounded/beveled edges
+const bodyShape=new THREE.Shape();
+bodyShape.moveTo(-2.5,-1.45);
+bodyShape.lineTo(2.5,-1.45);
+bodyShape.lineTo(2.5,1.05);
+bodyShape.lineTo(2.15,1.55);
+bodyShape.lineTo(-1.95,1.55);
+bodyShape.lineTo(-2.5,1.15);
+bodyShape.closePath();
+const bodyGeo=new THREE.ExtrudeGeometry(bodyShape,{depth:8.6,bevelEnabled:true,bevelSegments:2,bevelSize:.12,bevelThickness:.12});
+bodyGeo.center();
+const body=new THREE.Mesh(bodyGeo,new THREE.MeshStandardMaterial({color:0xd83a32,roughness:.62}));
+body.castShadow=true;body.receiveShadow=true;bus.add(body);
+
+// Yellow lower skirt
+const skirt=new THREE.Mesh(new THREE.BoxGeometry(5.0,.72,8.8),new THREE.MeshStandardMaterial({color:0xf0c72e,roughness:.6}));
+skirt.position.y=-1.15;skirt.castShadow=true;bus.add(skirt);
+
+// Windows, front and rear glass
+const glassMat=new THREE.MeshStandardMaterial({color:0x9edcf0,metalness:.1,roughness:.2});
+const frontGlass=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.25),glassMat);
+frontGlass.position.set(-2.05,.45,-4.36);frontGlass.rotation.y=-Math.PI/2;frontGlass.rotation.z=.12;bus.add(frontGlass);
+const rearGlass=new THREE.Mesh(new THREE.PlaneGeometry(3.8,1.25),glassMat);
+rearGlass.position.set(2.05,.45,4.36);rearGlass.rotation.y=Math.PI/2;bus.add(rearGlass);
+
+// Side windows
+for(const z of [-3.05,-1.05,1.05,3.05]){
+  for(const x of [-2.53,2.53]){
+    const win=new THREE.Mesh(new THREE.PlaneGeometry(1.55,1.12),glassMat);
+    win.position.set(x,.48,z);
+    win.rotation.y=x<0?-Math.PI/2:Math.PI/2;
+    bus.add(win);
+  }
+}
+
+// Wheels: true cylinders, axis across the vehicle width
+const tireMat=new THREE.MeshStandardMaterial({color:0x171717,roughness:.85});
+const rimMat=new THREE.MeshStandardMaterial({color:0xbfc5c9,metalness:.65,roughness:.3});
+for(const x of [-2.62,2.62]) for(const z of [-2.65,2.65]){
+  const tire=new THREE.Mesh(new THREE.CylinderGeometry(.82,.82,.42,24),tireMat);
+  tire.rotation.z=Math.PI/2;
+  tire.position.set(x,-1.72,z);
+  tire.castShadow=true;bus.add(tire);
+  const rim=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.45,20),rimMat);
+  rim.rotation.z=Math.PI/2;
+  rim.position.set(x,-1.72,z);
+  rim.castShadow=true;bus.add(rim);
+}
+
+// Bumpers, headlights, tail lights
+const bumperMat=new THREE.MeshStandardMaterial({color:0x242424,roughness:.55});
+const bumperFront=new THREE.Mesh(new THREE.BoxGeometry(4.7,.35,.25),bumperMat);
+bumperFront.position.set(0,-1.35,-4.55);bus.add(bumperFront);
+const bumperRear=bumperFront.clone();bumperRear.position.z=4.55;bus.add(bumperRear);
+const lampMat=new THREE.MeshStandardMaterial({color:0xfff3c4,emissive:0x554400,emissiveIntensity:.45});
+for(const x of [-1.55,1.55]){
+  const lamp=new THREE.Mesh(new THREE.SphereGeometry(.24,12,8),lampMat);
+  lamp.position.set(x,-.55,-4.58);bus.add(lamp);
+  const tail=new THREE.Mesh(new THREE.SphereGeometry(.2,12,8),new THREE.MeshStandardMaterial({color:0xff2020,emissive:0x440000,emissiveIntensity:.35}));
+  tail.position.set(x,-.55,4.58);bus.add(tail);
+}
+
+// Mirrors
+const mirrorMat=new THREE.MeshStandardMaterial({color:0x202020,roughness:.5});
+for(const x of [-2.85,2.85]){
+  const arm=new THREE.Mesh(new THREE.BoxGeometry(.16,.16,.7),mirrorMat);
+  arm.position.set(x,.7,x<0?-4.0:4.0);arm.rotation.y=x<0?.18:-.18;bus.add(arm);
+  const mirror=new THREE.Mesh(new THREE.SphereGeometry(.18,10,8),mirrorMat);
+  mirror.position.set(x,.9,x<0?-4.3:4.3);bus.add(mirror);
+}
+
+scene.add(bus);
 
 let speed=0,steer=0,gas=false,brake=false,left=false,right=false;
 const maxSpeed=.75;
