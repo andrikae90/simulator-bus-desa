@@ -48,7 +48,7 @@ for(let z=-230;z<240;z+=25){
 
 // bus - detailed lightweight model
 const bus=new THREE.Group();
-bus.position.set(0,2.58,35);
+bus.position.set(0,2.90,35);
 
 // Main body: extruded side profile with a slightly sloped front and rounded/beveled edges
 const bodyShape=new THREE.Shape();
