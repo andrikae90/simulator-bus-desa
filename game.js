@@ -48,7 +48,7 @@ for(let z=-230;z<240;z+=25){
 
 // bus - detailed lightweight model
 const bus=new THREE.Group();
-bus.position.set(0,2.55,35);
+bus.position.set(0,1.97,35);
 
 // Main body: extruded side profile with a slightly sloped front and rounded/beveled edges
 const bodyShape=new THREE.Shape();
@@ -91,11 +91,11 @@ const rimMat=new THREE.MeshStandardMaterial({color:0xbfc5c9,metalness:.65,roughn
 for(const x of [-2.62,2.62]) for(const z of [-2.65,2.65]){
   const tire=new THREE.Mesh(new THREE.CylinderGeometry(.82,.82,.42,24),tireMat);
   tire.rotation.z=Math.PI/2;
-  tire.position.set(x,-1.72,z);
+  tire.position.set(x,-1.15,z);
   tire.castShadow=true;bus.add(tire);
   const rim=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.45,20),rimMat);
   rim.rotation.z=Math.PI/2;
-  rim.position.set(x,-1.72,z);
+  rim.position.set(x,-1.15,z);
   rim.castShadow=true;bus.add(rim);
 }
 
