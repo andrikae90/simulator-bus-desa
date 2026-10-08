@@ -48,7 +48,7 @@ for(let z=-230;z<240;z+=25){
 
 // bus - detailed lightweight model
 const bus=new THREE.Group();
-bus.position.set(0,6.00,35);
+bus.position.set(0,2.55,35);
 
 // Main body: extruded side profile with a slightly sloped front and rounded/beveled edges
 const bodyShape=new THREE.Shape();
@@ -142,9 +142,9 @@ function animate(){
  bus.position.addScaledVector(dir,speed);
  // keep bus near the road
  bus.position.x=THREE.MathUtils.clamp(bus.position.x,-5,5);
- const target=new THREE.Vector3(bus.position.x,5,bus.position.z+13).add(new THREE.Vector3(0,0,0));
+ const target=new THREE.Vector3(bus.position.x,6.5,bus.position.z+18);
  camera.position.lerp(target,0.08);
- camera.lookAt(bus.position.x,2,bus.position.z-10);
+ camera.lookAt(bus.position.x,1.2,bus.position.z-5);
  speedText.textContent=Math.round(speed*120)+' km/jam';
  renderer.render(scene,camera);
 }
