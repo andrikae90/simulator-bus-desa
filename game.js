@@ -18,27 +18,27 @@ sun.position.set(-60,100,40);sun.castShadow=true;scene.add(sun);
 const ground=new THREE.Mesh(new THREE.PlaneGeometry(500,500),new THREE.MeshStandardMaterial({color:0x69a84f}));
 ground.rotation.x=-Math.PI/2;ground.receiveShadow=true;scene.add(ground);
 
-function box(w,h,d,color,x,y,z){
+function worldBox(w,h,d,color,x,y,z){
  const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color}));
  m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;scene.add(m);return m;
 }
 function tree(x,z){
- const trunk=box(1.2,4,1.2,0x70452a,x,2,z);
+ const trunk=worldBox(1.2,4,1.2,0x70452a,x,2,z);
  const crown=new THREE.Mesh(new THREE.SphereGeometry(4,10,10),new THREE.MeshStandardMaterial({color:0x237a35}));
  crown.position.set(x,6,z);crown.castShadow=true;scene.add(crown);
 }
 function house(x,z,rot=0){
- const base=box(8,4.5,7,0xe8d1a8,x,2.25,z);base.rotation.y=rot;
+ const base=worldBox(8,4.5,7,0xe8d1a8,x,2.25,z);base.rotation.y=rot;
  const roof=new THREE.Mesh(new THREE.ConeGeometry(6.3,3.5,4),new THREE.MeshStandardMaterial({color:0x9b3b2e}));
  roof.position.set(x,6.2,z);roof.rotation.y=Math.PI/4+rot;roof.castShadow=true;scene.add(roof);
- box(1.6,2.5,.3,0x56351f,x,1.3,z-3.55);
+ worldBox(1.6,2.5,.3,0x56351f,x,1.3,z-3.55);
 }
 function field(x,z,w,d){
- const f=box(w,.08,d,0x7eb84b,x,.04,z);
- for(let i=-w/2+2;i<w/2;i+=3) box(.12,.25,d-.5,0x4e8e37,x+i,.2,z);
+ const f=worldBox(w,.08,d,0x7eb84b,x,.04,z);
+ for(let i=-w/2+2;i<w/2;i+=3) worldBox(.12,.25,d-.5,0x4e8e37,x+i,.2,z);
 }
 for(let z=-240;z<250;z+=18){
- box(14,.12,18,0x5b5b55,0,.08,z);
+ worldBox(14,.12,18,0x5b5b55,0,.08,z);
 }
 for(let z=-230;z<240;z+=25){
  tree(-18,z+5);tree(18,z-6);
