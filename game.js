@@ -38,7 +38,7 @@ function field(x,z,w,d){
  for(let i=-w/2+2;i<w/2;i+=3) box(.12,.25,d-.5,0x4e8e37,x+i,.2,z);
 }
 for(let z=-240;z<250;z+=18){
- box(14,.12,16,0x5b5b55,0,.08,z);
+ box(14,.12,18,0x5b5b55,0,.08,z);
 }
 for(let z=-230;z<240;z+=25){
  tree(-18,z+5);tree(18,z-6);
@@ -48,7 +48,7 @@ for(let z=-230;z<240;z+=25){
 
 // bus - low-poly bus simulator model
 const bus=new THREE.Group();
-bus.position.set(0,2.12,35);
+bus.position.set(0,2.10,35);
 
 const red=new THREE.MeshStandardMaterial({color:0xc62828,roughness:.5});
 const red2=new THREE.MeshStandardMaterial({color:0x9e1f1f,roughness:.55});
@@ -83,14 +83,6 @@ box(.09,1.18,.13,dark,0,.88,4.25);
 box(3.2,.20,.12,dark,0,-.42,4.22);
 box(4.65,.28,.25,dark,0,-1.32,4.55);
 
-// Side window panels: large, dark and clearly separated by pillars
-for(const side of [-1,1]){
-  for(const z of [-3.05,-1.02,1.02,3.05]){
-    box(1.62,1.18,.09,glass,side*2.57,.78,z);
-  }
-  // yellow/black window belt and pillars
-  box(.10,1.35,7.45,red2,side*2.63,.76,0);
-}
 // Re-add windows on top of the side strip so they remain visible
 for(const side of [-1,1]) for(const z of [-3.05,-1.02,1.02,3.05]){
   const w=part(new THREE.BoxGeometry(.08,1.18,1.62),glass,side*2.66,.78,z);
@@ -154,7 +146,7 @@ function animate(){
  const dir=new THREE.Vector3(0,0,-1).applyQuaternion(bus.quaternion);
  bus.position.addScaledVector(dir,speed);
  // keep bus near the road
- bus.position.x=THREE.MathUtils.clamp(bus.position.x,-5,5);
+ bus.position.x=THREE.MathUtils.clamp(bus.position.x,-4.4,4.4);
  const target=new THREE.Vector3(bus.position.x,6.5,bus.position.z+18);
  camera.position.lerp(target,0.08);
  camera.lookAt(bus.position.x,1.2,bus.position.z-5);
