@@ -177,7 +177,7 @@ const cameraButton=document.getElementById('cameraBtn');
 const cameraModes=[
  {name:'BELAKANG',position:new THREE.Vector3(0,6.5,18),look:new THREE.Vector3(0,1.2,-5)},
  {name:'DEPAN',position:new THREE.Vector3(0,5,-14),look:new THREE.Vector3(0,1,4)},
- {name:'KABIN',position:new THREE.Vector3(0,1.30,-2.65),look:new THREE.Vector3(0,1.45,-28)},
+ {name:'KABIN',position:new THREE.Vector3(0,1.05,-4.55),look:new THREE.Vector3(0,1.35,-32)},
  {name:'KIRI',position:new THREE.Vector3(-10,4,1),look:new THREE.Vector3(0,1,0)},
  {name:'KANAN',position:new THREE.Vector3(10,4,1),look:new THREE.Vector3(0,1,0)},
  {name:'ATAS',position:new THREE.Vector3(0,20,3),look:new THREE.Vector3(0,0,-2)},
