@@ -163,6 +163,24 @@ for(const x of [-2.94,2.94]){
 box(1.45,.24,1.25,dark,0,2.48,.45);
 box(1.18,.08,.95,chrome,0,2.63,.45);
 
+// Driver cabin interior: dashboard, instrument panel, steering wheel and pillars
+box(3.75,.42,.72,dark,0,-.22,-3.66);
+box(2.25,.28,.12,red2,0,.08,-3.84);
+box(1.05,.22,.10,glass,-.72,.12,-3.91);
+box(.48,.16,.08,accent,-.72,.12,-3.98);
+box(.08,1.32,.14,red2,-1.88,.72,-3.98);
+box(.08,1.32,.14,red2,1.88,.72,-3.98);
+box(1.18,.10,.20,chrome,-.82,-.04,-3.56);
+const steeringWheel=part(new THREE.TorusGeometry(.38,.055,10,28),dark,-.82,.12,-3.36);
+steeringWheel.rotation.set(0,0,0);
+part(new THREE.CylinderGeometry(.09,.09,.12,16),chrome,-.82,.12,-3.36,Math.PI/2,0,0);
+for(let i=0;i<3;i++){
+ const spoke=box(.045,.34,.045,chrome,-.82,.12,-3.35);
+ spoke.rotation.z=i*Math.PI*2/3;
+}
+box(.62,.08,.42,red2,.82,-.02,-3.48);
+box(.38,.04,.20,chrome,.82,.04,-3.57);
+
 scene.add(bus);
 
 let speed=0,steer=0,gas=false,brake=false,left=false,right=false;
@@ -177,24 +195,58 @@ const cameraButton=document.getElementById('cameraBtn');
 const cameraModes=[
  {name:'BELAKANG',position:new THREE.Vector3(0,6.5,18),look:new THREE.Vector3(0,1.2,-5)},
  {name:'DEPAN',position:new THREE.Vector3(0,5,-14),look:new THREE.Vector3(0,1,4)},
- {name:'KABIN',position:new THREE.Vector3(0,1.05,-4.55),look:new THREE.Vector3(0,1.35,-32)},
+ {name:'KABIN',position:new THREE.Vector3(-.55,.62,-3.28),look:new THREE.Vector3(-.55,.62,-18)},
  {name:'KIRI',position:new THREE.Vector3(-10,4,1),look:new THREE.Vector3(0,1,0)},
  {name:'KANAN',position:new THREE.Vector3(10,4,1),look:new THREE.Vector3(0,1,0)},
  {name:'ATAS',position:new THREE.Vector3(0,20,3),look:new THREE.Vector3(0,0,-2)},
  {name:'LUAR',position:new THREE.Vector3(9,7,16),look:new THREE.Vector3(0,1,-3)}
 ];
 let cameraModeIndex=0;
-function updateCameraLabel(){cameraButton.textContent='KAMERA: '+cameraModes[cameraModeIndex].name;}
+function updateCameraLabel(){
+ cameraButton.textContent='KAMERA: '+cameraModes[cameraModeIndex].name;
+ const help=document.getElementById('help');
+ if(help) help.textContent=cameraModeIndex===2?'Kabin • Geser layar untuk melihat sekitar':'Versi 1 • Jalan Desa';
+}
+let cabinYaw=0,cabinPitch=0,draggingCabin=false,lastTouchX=0,lastTouchY=0;
+function cabinLookTarget(){
+ const distance=18;
+ const localDirection=new THREE.Vector3(
+  Math.sin(cabinYaw)*Math.cos(cabinPitch),
+  Math.sin(cabinPitch),
+  -Math.cos(cabinYaw)*Math.cos(cabinPitch)
+ ).multiplyScalar(distance);
+ return bus.position.clone().add(cameraModes[2].position).add(localDirection).applyQuaternion(new THREE.Quaternion());
+}
 function switchCamera(){
  cameraModeIndex=(cameraModeIndex+1)%cameraModes.length;
  const mode=cameraModes[cameraModeIndex];
  const offset=mode.position.clone().applyQuaternion(bus.quaternion);
  const target=bus.position.clone().add(offset);
- const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
  camera.position.copy(target);
- camera.lookAt(bus.position.clone().add(lookOffset));
+ if(cameraModeIndex===2){
+  const lookOffset=new THREE.Vector3(Math.sin(cabinYaw)*18,Math.sin(cabinPitch)*18,-Math.cos(cabinYaw)*Math.cos(cabinPitch)*18).add(mode.position).applyQuaternion(bus.quaternion);
+  camera.lookAt(bus.position.clone().add(lookOffset));
+ }else{
+  const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
+  camera.lookAt(bus.position.clone().add(lookOffset));
+ }
  updateCameraLabel();
 }
+renderer.domElement.addEventListener('pointerdown',event=>{
+ if(cameraModeIndex!==2)return;
+ draggingCabin=true;lastTouchX=event.clientX;lastTouchY=event.clientY;
+ renderer.domElement.setPointerCapture?.(event.pointerId);
+});
+renderer.domElement.addEventListener('pointermove',event=>{
+ if(!draggingCabin||cameraModeIndex!==2)return;
+ const dx=event.clientX-lastTouchX,dy=event.clientY-lastTouchY;
+ lastTouchX=event.clientX;lastTouchY=event.clientY;
+ cabinYaw=THREE.MathUtils.clamp(cabinYaw-dx*.006,-1.25,1.25);
+ cabinPitch=THREE.MathUtils.clamp(cabinPitch-dy*.005,-.48,.48);
+});
+function stopCabinDrag(){draggingCabin=false;}
+renderer.domElement.addEventListener('pointerup',stopCabinDrag);
+renderer.domElement.addEventListener('pointercancel',stopCabinDrag);
 cameraButton.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();switchCamera();});
 cameraButton.addEventListener('click',event=>{event.preventDefault();});
 updateCameraLabel();
@@ -213,8 +265,14 @@ function animate(){
  const cameraOffset=mode.position.clone().applyQuaternion(bus.quaternion);
  const cameraTarget=bus.position.clone().add(cameraOffset);
  camera.position.lerp(cameraTarget,cameraModeIndex===2?0.28:0.10);
- const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
- camera.lookAt(bus.position.clone().add(lookOffset));
+ if(cameraModeIndex===2){
+  const direction=new THREE.Vector3(Math.sin(cabinYaw)*Math.cos(cabinPitch),Math.sin(cabinPitch),-Math.cos(cabinYaw)*Math.cos(cabinPitch));
+  const lookOffset=mode.position.clone().add(direction.multiplyScalar(18)).applyQuaternion(bus.quaternion);
+  camera.lookAt(bus.position.clone().add(lookOffset));
+ }else{
+  const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
+  camera.lookAt(bus.position.clone().add(lookOffset));
+ }
  speedText.textContent=Math.round(speed*120)+' km/jam';
  renderer.render(scene,camera);
 }
