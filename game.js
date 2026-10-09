@@ -185,7 +185,18 @@ const cameraModes=[
 ];
 let cameraModeIndex=0;
 function updateCameraLabel(){cameraButton.textContent='KAMERA: '+cameraModes[cameraModeIndex].name;}
-cameraButton.addEventListener('click',()=>{cameraModeIndex=(cameraModeIndex+1)%cameraModes.length;updateCameraLabel();});
+function switchCamera(){
+ cameraModeIndex=(cameraModeIndex+1)%cameraModes.length;
+ const mode=cameraModes[cameraModeIndex];
+ const offset=mode.position.clone().applyQuaternion(bus.quaternion);
+ const target=bus.position.clone().add(offset);
+ const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
+ camera.position.copy(target);
+ camera.lookAt(bus.position.clone().add(lookOffset));
+ updateCameraLabel();
+}
+cameraButton.addEventListener('pointerdown',event=>{event.preventDefault();event.stopPropagation();switchCamera();});
+cameraButton.addEventListener('click',event=>{event.preventDefault();});
 updateCameraLabel();
 function animate(){
  requestAnimationFrame(animate);
