@@ -54,7 +54,7 @@ const red=new THREE.MeshStandardMaterial({color:0xc62828,roughness:.5});
 const red2=new THREE.MeshStandardMaterial({color:0x9e1f1f,roughness:.55});
 const yellow=new THREE.MeshStandardMaterial({color:0xf3c623,roughness:.5});
 const dark=new THREE.MeshStandardMaterial({color:0x111315,roughness:.75});
-const glass=new THREE.MeshStandardMaterial({color:0x163b49,roughness:.18,metalness:.2});
+const glass=new THREE.MeshStandardMaterial({color:0x163b49,roughness:.18,metalness:.2,transparent:true,opacity:.52,depthWrite:false});
 const chrome=new THREE.MeshStandardMaterial({color:0xb9c1c5,metalness:.7,roughness:.25});
 const white=new THREE.MeshStandardMaterial({color:0xf3f0df,roughness:.3});
 const accent=new THREE.MeshStandardMaterial({color:0xffd229,roughness:.38});
@@ -76,7 +76,7 @@ upperShape.lineTo(2.48,.65);upperShape.quadraticCurveTo(2.48,1.55,1.65,1.62);
 upperShape.lineTo(-1.55,1.62);upperShape.quadraticCurveTo(-2.48,1.55,-2.48,.65);upperShape.closePath();
 const upperGeo=new THREE.ExtrudeGeometry(upperShape,{depth:8.25,bevelEnabled:true,bevelSegments:4,bevelSize:.14,bevelThickness:.12});
 upperGeo.center();
-part(upperGeo,red,0,.72,0);
+part(upperGeo,[red,new THREE.MeshBasicMaterial({transparent:true,opacity:0,depthWrite:false,side:THREE.DoubleSide})],0,.72,0);
 
 // Large rear window, clearly visible from follow camera
 box(3.75,1.25,.10,glass,0,.88,4.18);
