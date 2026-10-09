@@ -142,6 +142,47 @@ for(const side of [-1,1]){
  }
 }
 
+// Nakula SHD livery texture overlay
+// The uploaded file is a JPEG image stored with a .png filename.
+// Crop the two side panels from its Jetbus 2+ SHD texture sheet.
+// If loading fails, the original bus model and controls remain usable.
+{
+ const liveryImage = new Image();
+ liveryImage.crossOrigin = 'anonymous';
+ liveryImage.onload = () => {
+  const makeSideTexture = (sx, sy, sw, sh, mirror=false) => {
+   const canvas = document.createElement('canvas');
+   canvas.width = 1024; canvas.height = 280;
+   const ctx = canvas.getContext('2d');
+   if (mirror) { ctx.translate(canvas.width,0); ctx.scale(-1,1); }
+   ctx.drawImage(liveryImage,sx,sy,sw,sh,0,0,canvas.width,canvas.height);
+   const tex = new THREE.CanvasTexture(canvas);
+   tex.colorSpace = THREE.SRGBColorSpace;
+   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+   return tex;
+  };
+  // The sheet has opposite sides laid out in opposite directions.
+  const sideTextures = [
+   makeSideTexture(0,330,900,245,false),
+   makeSideTexture(0,660,900,240,false)
+  ];
+  for (const cfg of [
+   {x:2.635, rot:Math.PI/2, tex:sideTextures[0]},
+   {x:-2.635, rot:-Math.PI/2, tex:sideTextures[1]}
+  ]) {
+   const sideMat = new THREE.MeshStandardMaterial({map:cfg.tex, roughness:.58, side:THREE.DoubleSide});
+   const sidePanel = new THREE.Mesh(new THREE.PlaneGeometry(8.22,2.24),sideMat);
+   sidePanel.position.set(cfg.x,.28,0);
+   sidePanel.rotation.y=cfg.rot;
+   sidePanel.castShadow=true;
+   sidePanel.receiveShadow=true;
+   bus.add(sidePanel);
+  }
+ };
+ liveryImage.onerror = () => console.warn('Livery image could not be loaded; using default bus colors.');
+ liveryImage.src = 'https://raw.githubusercontent.com/andrikae90/simulator-bus-desa/main/textures/livery-bus.png';
+}
+
 // Mirrors, arms and roof cap
 for(const x of [-2.82,2.82]){
  box(.12,.12,.62,dark,x,.92,-4.0);
