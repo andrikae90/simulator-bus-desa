@@ -173,6 +173,20 @@ addEventListener('keydown',e=>{if(e.key==='ArrowUp')gas=true;if(e.key==='ArrowDo
 addEventListener('keyup',e=>{if(e.key==='ArrowUp')gas=false;if(e.key==='ArrowDown')brake=false;if(e.key==='ArrowLeft')left=false;if(e.key==='ArrowRight')right=false});
 
 const speedText=document.getElementById('speed');
+const cameraButton=document.getElementById('cameraBtn');
+const cameraModes=[
+ {name:'BELAKANG',position:new THREE.Vector3(0,6.5,18),look:new THREE.Vector3(0,1.2,-5)},
+ {name:'DEPAN',position:new THREE.Vector3(0,5,-14),look:new THREE.Vector3(0,1,4)},
+ {name:'KABIN',position:new THREE.Vector3(0,1.30,-2.65),look:new THREE.Vector3(0,1.45,-28)},
+ {name:'KIRI',position:new THREE.Vector3(-10,4,1),look:new THREE.Vector3(0,1,0)},
+ {name:'KANAN',position:new THREE.Vector3(10,4,1),look:new THREE.Vector3(0,1,0)},
+ {name:'ATAS',position:new THREE.Vector3(0,20,3),look:new THREE.Vector3(0,0,-2)},
+ {name:'LUAR',position:new THREE.Vector3(9,7,16),look:new THREE.Vector3(0,1,-3)}
+];
+let cameraModeIndex=0;
+function updateCameraLabel(){cameraButton.textContent='KAMERA: '+cameraModes[cameraModeIndex].name;}
+cameraButton.addEventListener('click',()=>{cameraModeIndex=(cameraModeIndex+1)%cameraModes.length;updateCameraLabel();});
+updateCameraLabel();
 function animate(){
  requestAnimationFrame(animate);
  if(gas)speed=Math.min(maxSpeed,speed+.012);else speed*=.985;
@@ -184,9 +198,12 @@ function animate(){
  bus.position.addScaledVector(dir,speed);
  // keep bus near the road
  bus.position.x=THREE.MathUtils.clamp(bus.position.x,-4.4,4.4);
- const target=new THREE.Vector3(bus.position.x,6.5,bus.position.z+18);
- camera.position.lerp(target,0.08);
- camera.lookAt(bus.position.x,1.2,bus.position.z-5);
+ const mode=cameraModes[cameraModeIndex];
+ const cameraOffset=mode.position.clone().applyQuaternion(bus.quaternion);
+ const cameraTarget=bus.position.clone().add(cameraOffset);
+ camera.position.lerp(cameraTarget,cameraModeIndex===2?0.28:0.10);
+ const lookOffset=mode.look.clone().applyQuaternion(bus.quaternion);
+ camera.lookAt(bus.position.clone().add(lookOffset));
  speedText.textContent=Math.round(speed*120)+' km/jam';
  renderer.render(scene,camera);
 }
