@@ -57,6 +57,8 @@ const dark=new THREE.MeshStandardMaterial({color:0x111315,roughness:.75});
 const glass=new THREE.MeshStandardMaterial({color:0x163b49,roughness:.18,metalness:.2});
 const chrome=new THREE.MeshStandardMaterial({color:0xb9c1c5,metalness:.7,roughness:.25});
 const white=new THREE.MeshStandardMaterial({color:0xf3f0df,roughness:.3});
+const accent=new THREE.MeshStandardMaterial({color:0xffd229,roughness:.38});
+const plate=new THREE.MeshStandardMaterial({color:0xf5f5f5,roughness:.55});
 
 function part(geo,mat,x,y,z,rx=0,ry=0,rz=0){
  const m=new THREE.Mesh(geo,mat);m.position.set(x,y,z);m.rotation.set(rx,ry,rz);m.castShadow=true;m.receiveShadow=true;bus.add(m);return m;
@@ -83,9 +85,31 @@ box(.09,1.18,.13,dark,0,.88,4.25);
 box(3.2,.20,.12,dark,0,-.42,4.22);
 box(4.65,.28,.25,dark,0,-1.32,4.55);
 
+// Rear destination display, tail lamps, grille and license plate
+box(2.25,.38,.10,dark,0,1.58,4.20);
+box(1.95,.20,.04,accent,0,1.60,4.27);
+box(2.65,.42,.08,red2,0,-.90,4.25);
+for(const x of [-1.85,1.85]){
+ box(.48,.52,.12,red2,x,-.70,4.27);
+ box(.30,.18,.06,white,x,-.60,4.35);
+ box(.30,.18,.06,new THREE.MeshStandardMaterial({color:0xff2929,emissive:0x660000}),x,-.82,4.35);
+}
+box(.92,.30,.05,plate,0,-1.12,4.36);
+box(.16,.08,.03,dark,0,-1.12,4.40);
+
 // Re-add windows on top of the side strip so they remain visible
 for(const side of [-1,1]) for(const z of [-3.05,-1.02,1.02,3.05]){
   const w=part(new THREE.BoxGeometry(.08,1.18,1.62),glass,side*2.66,.78,z);
+}
+
+// Clean side livery stripes running along the passenger body
+for(const side of [-1,1]){
+ box(.055,.16,7.55,accent,side*2.57,-.25,0);
+ box(.06,.055,7.70,white,side*2.585,-.43,0);
+ // small dark window pillars make each window read as a separate pane
+ for(const z of [-2.03,0,2.03]){
+  box(.07,1.20,.09,red2,side*2.69,.78,z);
+ }
 }
 
 // Front windshield and lower front face
@@ -125,6 +149,19 @@ for(const x of [-2.82,2.82]){
 }
 box(4.72,.18,8.05,red2,0,2.30,0);
 box(2.5,.34,.10,dark,0,1.42,-4.25);
+
+// Front destination board, grille and mirrors with visible mirror glass
+box(2.10,.34,.08,dark,0,1.62,-4.20);
+box(1.75,.12,.035,accent,0,1.62,-4.25);
+box(1.65,.32,.07,dark,0,-.83,-4.30);
+for(let i=0;i<7;i++) box(.055,.22,.025,chrome,-.52+i*.17,-.83,-4.35);
+for(const x of [-2.94,2.94]){
+ part(new THREE.BoxGeometry(.08,.24,.32),glass,x,1.08,-4.36);
+}
+
+// Small roof air-conditioning unit for a coach-bus silhouette
+box(1.45,.24,1.25,dark,0,2.48,.45);
+box(1.18,.08,.95,chrome,0,2.63,.45);
 
 scene.add(bus);
 
